@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 import hashlib
 from collections.abc import Callable
@@ -45,7 +46,7 @@ class CustomEventHandler(FileSystemEventHandler):
 
 
 class FileSystemWatcher:
-    def __init__(self, directory: str, patterns: set[str] | None = None) -> None:
+    def __init__(self, directory: str, patterns: list[str] | None = None) -> None:
         self.directory = Path(directory)
         self.patterns = patterns or {"*"}  # Defaults to watching all files
         self.file_state: dict[str, FileState] = {}
@@ -85,12 +86,19 @@ class FileSystemWatcher:
                 hash.update(block)
         return hash.hexdigest()
 
+    def _is_file_path_allowed_by_pattern(self, file_path) -> bool:
+        allowed = []
+        for pattern in self.patterns:
+            match = re.compile(rf"{pattern}").search(file_path)
+            allowed.append(match)
+        return any(allowed)
+
     def _get_file_state(self, file_path: str) -> FileState | None:
         """Get current state of a file"""
         if "git" in file_path:
             return None
         path = Path(file_path)
-        if path.exists():
+        if path.exists() and self._is_file_path_allowed_by_pattern(file_path):
             return FileState(
                 modified_time=path.stat().st_mtime,
                 size=path.stat().st_size,
@@ -148,7 +156,8 @@ if __name__ == "__main__":
 
     args = sys.argv
     dir = args[1]
-    watcher = FileSystemWatcher(dir)
+    pattern = args[2:]
+    watcher = FileSystemWatcher(dir, pattern)
     try:
         watcher.start()
     except KeyboardInterrupt:
