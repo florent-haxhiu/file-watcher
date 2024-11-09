@@ -77,6 +77,8 @@ class FileSystemWatcher:
 
     def _get_file_state(self, file_path: str) -> FileState | None:
         """Get current state of a file"""
+        if "git" in file_path:
+            return None
         path = Path(file_path)
         if path.exists():
             return FileState(
