@@ -78,6 +78,7 @@ class FileSystemWatcher:
         return logger
 
     def _get_file_checksum(self, file_path) -> str:
+        """Creates and returns checksum for file"""
         block_size = 4096
         hash = hashlib.blake2b()
 
@@ -87,6 +88,7 @@ class FileSystemWatcher:
         return hash.hexdigest()
 
     def _is_file_path_allowed_by_pattern(self, file_path) -> bool:
+        """Checks if file adheres to the pattern"""
         allowed = []
         for pattern in self.patterns:
             match = re.compile(rf"{pattern}").search(file_path)
