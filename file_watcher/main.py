@@ -1,5 +1,6 @@
 import logging
 import time
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,6 +76,15 @@ class FileSystemWatcher:
 
         return logger
 
+    def _get_file_checksum(self, file_path) -> str:
+        block_size = 4096
+        hash = hashlib.blake2b()
+
+        with open(file_path, "rb") as file:
+            for block in iter(lambda: file.read(block_size), b""):
+                hash.update(block)
+        return hash.hexdigest()
+
     def _get_file_state(self, file_path: str) -> FileState | None:
         """Get current state of a file"""
         if "git" in file_path:
@@ -82,7 +92,9 @@ class FileSystemWatcher:
         path = Path(file_path)
         if path.exists():
             return FileState(
-                modified_time=path.stat().st_mtime, size=path.stat().st_size
+                modified_time=path.stat().st_mtime,
+                size=path.stat().st_size,
+                hash=self._get_file_checksum(file_path),
             )
         return None
 
