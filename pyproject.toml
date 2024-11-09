@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "file-watcher"
+version = "0.1.0"
+description = ""
+authors = ["Florent Haxhiu <florenthaxhiu03@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
